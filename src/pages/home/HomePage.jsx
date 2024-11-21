@@ -1,18 +1,10 @@
-import { Link } from "react-router-dom";
+import { useAuthStore } from "../../store/authUser";
+import AuthScreen from "./AuthScreen";
+import HomeScreen from "./HomeScreen";
 
 const HomePage = () => {
-	return (
-		<div className="min-h-screen bg-black text-white">
-			<header className="max-w-6xl mx-auto flex items-center justify-between p-4">
-				<Link to="/">
-					<img src="/netflix-logo.png" alt="logo" className="w-52" />
-				</Link>
-				<Link to="/login" className="text-white hover:underline">
-					Sign In
-				</Link>
-			</header>
-		</div>
-	);
-};
+	const { user } = useAuthStore();
 
+	return <>{user ? <HomeScreen /> : <AuthScreen />}</>;
+};
 export default HomePage;
