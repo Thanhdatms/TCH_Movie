@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useContentStore } from "../store/content";
-import axios from "axios";
+import axiosInstance from "../api/axios";
 import Navbar from "../components/Navbar";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ReactPlayer from "react-player";
@@ -23,7 +23,7 @@ const WatchPage = () => {
 	useEffect(() => {
 		const getTrailers = async () => {
 			try {
-				const res = await axios.get(`/api/v1/${contentType}/${id}/trailers`);
+				const res = await axiosInstance.get(`/${contentType}/${id}/trailers`);
 				setTrailers(res.data.trailers);
 			} catch (error) {
 				if (error.message.includes("404")) {
@@ -38,7 +38,7 @@ const WatchPage = () => {
 	useEffect(() => {
 		const getSimilarContent = async () => {
 			try {
-				const res = await axios.get(`/api/v1/${contentType}/${id}/similar`);
+				const res = await axiosInstance.get(`/${contentType}/${id}/similar`);
 				setSimilarContent(res.data.similar);
 			} catch (error) {
 				if (error.message.includes("404")) {
@@ -53,7 +53,7 @@ const WatchPage = () => {
 	useEffect(() => {
 		const getContentDetails = async () => {
 			try {
-				const res = await axios.get(`/api/v1/${contentType}/${id}/details`);
+				const res = await axiosInstance.get(`/${contentType}/${id}/details`);
 				setContent(res.data.content);
 			} catch (error) {
 				if (error.message.includes("404")) {
@@ -110,9 +110,8 @@ const WatchPage = () => {
 					<div className='flex justify-between items-center mb-4'>
 						<button
 							className={`
-							bg-gray-500/70 hover:bg-gray-500 text-white py-2 px-4 rounded ${
-								currentTrailerIdx === 0 ? "opacity-50 cursor-not-allowed " : ""
-							}}
+							bg-gray-500/70 hover:bg-gray-500 text-white py-2 px-4 rounded ${currentTrailerIdx === 0 ? "opacity-50 cursor-not-allowed " : ""
+								}}
 							`}
 							disabled={currentTrailerIdx === 0}
 							onClick={handlePrev}
@@ -122,9 +121,8 @@ const WatchPage = () => {
 
 						<button
 							className={`
-							bg-gray-500/70 hover:bg-gray-500 text-white py-2 px-4 rounded ${
-								currentTrailerIdx === trailers.length - 1 ? "opacity-50 cursor-not-allowed " : ""
-							}}
+							bg-gray-500/70 hover:bg-gray-500 text-white py-2 px-4 rounded ${currentTrailerIdx === trailers.length - 1 ? "opacity-50 cursor-not-allowed " : ""
+								}}
 							`}
 							disabled={currentTrailerIdx === trailers.length - 1}
 							onClick={handleNext}
