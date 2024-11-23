@@ -3,12 +3,12 @@ import { useContentStore } from "../store/content";
 import Navbar from "../components/Navbar";
 import { Search } from "lucide-react";
 import toast from "react-hot-toast";
-import axios from "axios";
+import axiosInstance from "../api/axios";
 import { ORIGINAL_IMG_BASE_URL } from "../utils/constants";
 import { Link } from "react-router-dom";
 
 const SearchPage = () => {
-	const [activeTab, setActiveTab] = useState("movie");
+	const [activeTab, setActiveTab] = useState("movies");
 	const [searchTerm, setSearchTerm] = useState("");
 
 	const [results, setResults] = useState([]);
@@ -16,14 +16,14 @@ const SearchPage = () => {
 
 	const handleTabClick = (tab) => {
 		setActiveTab(tab);
-		tab === "movie" ? setContentType("movie") : setContentType("tv");
+		tab === "movies" ? setContentType("movies") : setContentType("tvs");
 		setResults([]);
 	};
 
 	const handleSearch = async (e) => {
 		e.preventDefault();
 		try {
-			const res = await axios.get(`/api/v1/search/${activeTab}/${searchTerm}`);
+			const res = await axiosInstance.get(`/search/${activeTab}/${searchTerm}`);
 			setResults(res.data.content);
 		} catch (error) {
 			if (error.response.status === 404) {
@@ -40,26 +40,23 @@ const SearchPage = () => {
 			<div className='container mx-auto px-4 py-8'>
 				<div className='flex justify-center gap-3 mb-4'>
 					<button
-						className={`py-2 px-4 rounded ${
-							activeTab === "movie" ? "bg-red-600" : "bg-gray-800"
-						} hover:bg-red-700`}
-						onClick={() => handleTabClick("movie")}
+						className={`py-2 px-4 rounded ${activeTab === "movies" ? "bg-red-600" : "bg-gray-800"
+							} hover:bg-red-700`}
+						onClick={() => handleTabClick("movies")}
 					>
 						Movies
 					</button>
 					<button
-						className={`py-2 px-4 rounded ${
-							activeTab === "tv" ? "bg-red-600" : "bg-gray-800"
-						} hover:bg-red-700`}
-						onClick={() => handleTabClick("tv")}
+						className={`py-2 px-4 rounded ${activeTab === "tvs" ? "bg-red-600" : "bg-gray-800"
+							} hover:bg-red-700`}
+						onClick={() => handleTabClick("tvs")}
 					>
 						TV Shows
 					</button>
 					<button
-						className={`py-2 px-4 rounded ${
-							activeTab === "person" ? "bg-red-600" : "bg-gray-800"
-						} hover:bg-red-700`}
-						onClick={() => handleTabClick("person")}
+						className={`py-2 px-4 rounded ${activeTab === "s" ? "bg-red-600" : "bg-gray-800"
+							} hover:bg-red-700`}
+						onClick={() => handleTabClick("persons")}
 					>
 						Person
 					</button>
@@ -84,7 +81,7 @@ const SearchPage = () => {
 
 						return (
 							<div key={result.id} className='bg-gray-800 p-4 rounded'>
-								{activeTab === "person" ? (
+								{activeTab === "persons" ? (
 									<div className='flex flex-col items-center'>
 										<img
 											src={ORIGINAL_IMG_BASE_URL + result.profile_path}

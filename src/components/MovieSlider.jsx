@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useContentStore } from "../store/content";
-import axios from "axios";
+import axiosInstance from "../api/axios";
 import { Link } from "react-router-dom";
 import { SMALL_IMG_BASE_URL } from "../utils/constants";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -14,11 +14,11 @@ const MovieSlider = ({ category }) => {
 
 	const formattedCategoryName =
 		category.replaceAll("_", " ")[0].toUpperCase() + category.replaceAll("_", " ").slice(1);
-	const formattedContentType = contentType === "movie" ? "Movies" : "TV Shows";
+	const formattedContentType = contentType === "movies" ? "Movies" : "tvs Shows";
 
 	useEffect(() => {
 		const getContent = async () => {
-			const res = await axios.get(`/api/v1/${contentType}/${category}`);
+			const res = await axiosInstance.get(`/${contentType}/category/${category}`);
 			setContent(res.data.content);
 		};
 
