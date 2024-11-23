@@ -7,7 +7,7 @@ export default defineConfig({
 	server: {
 		proxy: {
 			"/api": {
-				target: "http://44.196.160.2:5000",
+				target: "https://tchserver.edwardxd.site",
 			},
 		},
 	},
