@@ -11,9 +11,7 @@ on:
 
 jobs:
   build:
-
     runs-on: self-hosted
-
     strategy:
       matrix:
         node-version: [22.x]
@@ -26,5 +24,33 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build application
+      run: npm run build --if-present
+
+    - name: Deploy to Nginx
+      run: |
+        # Stop Nginx
+        sudo systemctl stop nginx
+
+        # Copy Nginx config
+        sudo cp nginx.conf /etc/nginx/sites-available/tchmovie.conf
+        sudo ln -sf /etc/nginx/sites-available/tchmovie.conf /etc/nginx/sites-enabled/
+
+        # Clear and prepare directory
+        sudo rm -rf /var/www/tchmovie/*
+        sudo mkdir -p /var/www/tchmovie
+        sudo chown -R $USER:$USER /var/www/tchmovie
+
+        # Copy new build files
+        sudo cp -r dist/* /var/www/tchmovie/
+
+        # Set permissions
+        sudo chown -R www-data:www-data /var/www/tchmovie
+        sudo chmod -R 755 /var/www/tchmovie
+
+        # Start Nginx
+        sudo nginx -t && sudo systemctl start nginx && sudo systemctl reload nginx
