@@ -1,8 +1,29 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: './', // Use relative paths for assets
+  plugins: [react()],
+  base: './',  
   build: {
-    outDir: 'dist', // Ensure output directory is correct
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,  
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+        assetFileNames: 'assets/[name].[ext]',
+        chunkFileNames: 'assets/[name].[hash].js',
+        entryFileNames: 'assets/[name].[hash].js',
+      }
+    }
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://tchserver.edwardxd.site',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+  }
 });
