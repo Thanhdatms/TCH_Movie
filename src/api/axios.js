@@ -1,7 +1,9 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const BASE_URL = "https://tchserver.edwardxd.site/api/v1";
+const BASE_URL = import.meta.env.DEV 
+  ? "http://localhost:5000/api/v1"
+  : "https://tchserver.edwardxd.site/api/v1";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -29,25 +31,36 @@ axiosInstance.interceptors.response.use(
     // Only attempt refresh if it's a 401 and we haven't tried refreshing yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
+      
       try {
-        const refreshUrl = `https://tchserver.edwardxd.site/api/v1/auth/refresh-token`;
-        const response = await axios.post(refreshUrl, {}, { withCredentials: true });
-        const { accessToken } = response.data;
-        
-        if (accessToken) {
-          localStorage.setItem('accessToken', accessToken);
-          axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+        const refreshUrl = import.meta.env.DEV 
+          ? `http://localhost:5000/api/v1/auth/refresh-token`
+          : `https://tchserver.edwardxd.site/api/v1/auth/refresh-token`;
+          
+        // Make refresh token request
+        const response = await axios.post(refreshUrl, {}, { 
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.data.accessToken) {
+          // Update access token in localStorage and axios headers
+          localStorage.setItem('accessToken', response.data.accessToken);
+          axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${response.data.accessToken}`;
+          originalRequest.headers['Authorization'] = `Bearer ${response.data.accessToken}`;
+          
+          // Retry the original request
           return axiosInstance(originalRequest);
         }
       } catch (refreshError) {
-        // Only clear tokens if refresh explicitly fails
-        if (refreshError.response?.status === 401) {
-          localStorage.removeItem('accessToken');
-          Cookies.remove('refreshToken');
-        }
+        // Clear tokens only on explicit refresh failure
+        localStorage.removeItem('accessToken');
         return Promise.reject(refreshError);
       }
     }
+    
     return Promise.reject(error);
   }
 );

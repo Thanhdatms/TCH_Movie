@@ -24,44 +24,45 @@ export const useAuthStore = create((set) => ({
     set({ isLoggingIn: true });
     try {
       const response = await axiosInstance.post("/auth/login", credentials);
-      set({ user: response.data.user, isLoggingIn: false });
-      localStorage.setItem("accessToken", response.data.accessToken);
+      const { user, accessToken } = response.data;
+      set({ user, isLoggingIn: false });
+      localStorage.setItem("accessToken", accessToken);
+      // The refresh token is automatically handled by the browser as an HTTP-only cookie
     } catch (error) {
       set({ isLoggingIn: false, user: null });
-      toast.error(error.response.data.message || "Login failed");
+      localStorage.removeItem("accessToken");
+      toast.error(error.response?.data?.message || "Login failed");
     }
   },
   logout: async () => {
     set({ isLoggingOut: true });
     try {
       await axiosInstance.post("/auth/logout");
+      localStorage.removeItem("accessToken");
       set({ user: null, isLoggingOut: false });
       toast.success("Logged out successfully");
     } catch (error) {
       set({ isLoggingOut: false });
-      toast.error(error.response.data.message || "Logout failed");
+      toast.error(error.response?.data?.message || "Logout failed");
     }
   },
   authCheck: async () => {
     set({ isCheckingAuth: true });
-    const accessToken = localStorage.getItem('accessToken');
-    
     try {
-      if (!accessToken) {
-        set({ isCheckingAuth: false, user: null });
-        return;
-      }
-
       const response = await axiosInstance.get("/auth/auth-check");
-      set({ user: response.data.user, isCheckingAuth: false });
-    } catch (error) {
-      // Only clear user if we get an explicit auth error
-      if (error.response?.status === 401) {
-        set({ isCheckingAuth: false, user: null });
+      if (response.data.user) {
+        set({ user: response.data.user, isCheckingAuth: false });
+        // Update access token if provided
+        if (response.data.accessToken) {
+          localStorage.setItem("accessToken", response.data.accessToken);
+        }
       } else {
-        // For other errors, keep the current user state
-        set({ isCheckingAuth: false });
+        set({ user: null, isCheckingAuth: false });
+        localStorage.removeItem("accessToken");
       }
+    } catch (error) {
+      set({ isCheckingAuth: false, user: null });
+      localStorage.removeItem("accessToken");
     }
   },
 }));
