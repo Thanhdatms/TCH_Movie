@@ -1,9 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const BASE_URL = import.meta.env.DEV 
-  ? "http://localhost:5000/api/v1"
-  : "https://tchserver.edwardxd.site/api/v1";
+const BASE_URL = "https://tchserver.edwardxd.site/api/v1";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -27,21 +25,26 @@ axiosInstance.interceptors.response.use(
   response => response,
   async error => {
     const originalRequest = error.config;
-    if (error.response.status === 401 && !originalRequest._retry) {
+    
+    // Only attempt refresh if it's a 401 and we haven't tried refreshing yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const refreshUrl = import.meta.env.DEV 
-          ? `http://localhost:5000/api/v1/auth/refresh-token`
-          : `https://tchserver.edwardxd.site/api/v1/auth/refresh-token`;
-        const response = await axios.post(refreshUrl);
+        const refreshUrl = `https://tchserver.edwardxd.site/api/v1/auth/refresh-token`;
+        const response = await axios.post(refreshUrl, {}, { withCredentials: true });
         const { accessToken } = response.data;
-        localStorage.setItem('accessToken', accessToken);
-        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-        return axiosInstance(originalRequest);
+        
+        if (accessToken) {
+          localStorage.setItem('accessToken', accessToken);
+          axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+          return axiosInstance(originalRequest);
+        }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-        localStorage.setItem('accessToken', null);
-        Cookies.remove('refreshToken');
+        // Only clear tokens if refresh explicitly fails
+        if (refreshError.response?.status === 401) {
+          localStorage.removeItem('accessToken');
+          Cookies.remove('refreshToken');
+        }
         return Promise.reject(refreshError);
       }
     }
