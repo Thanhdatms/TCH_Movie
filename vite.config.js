@@ -20,7 +20,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://tchserver.edwardxd.site',
+        target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false
       }
