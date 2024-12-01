@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import axiosInstance from "../api/axios";
 import toast from "react-hot-toast";
+import { useAuthStore } from "../store/authUser";
 
 const AvatarSelectionModal = ({ isOpen, onClose, onAvatarSelect }) => {
   const [folders, setFolders] = useState([]);
@@ -60,10 +61,14 @@ const AvatarSelectionModal = ({ isOpen, onClose, onAvatarSelect }) => {
 
   const handleAvatarSelect = async (avatarUrl) => {
     try {
-      await axiosInstance.post("/user/avatar", { avatarUrl });
+      const response = await axiosInstance.put("/user/avatar", { avatarUrl });
+      console.log('Avatar update response:', response.data);
+      const updatedUser = response.data;
+      useAuthStore.getState().setUser(updatedUser);
       onAvatarSelect(avatarUrl);
       onClose();
     } catch (error) {
+      console.error('Avatar update error:', error);
       toast.error("Failed to update avatar");
     }
   };

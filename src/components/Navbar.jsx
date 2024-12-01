@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { LogOut, Menu, Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { useAuthStore } from "../store/authUser";
 import { useContentStore } from "../store/content";
 import AvatarDropdown from "./AvatarDropdown";
 
 const Navbar = () => {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-	const { user, logout } = useAuthStore();
+	const { logout } = useAuthStore();
 
 	const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
